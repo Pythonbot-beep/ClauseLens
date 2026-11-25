@@ -10,9 +10,9 @@ WITH semantic_search AS (
         id,
         ROW_NUMBER() OVER (ORDER BY embedding <=> CAST(:query_embedding AS vector)) AS rank
     FROM document_chunks
-    WHERE (tenant_id IS NULL OR tenant_id = :tenant_id)
-      AND (:vendor_name IS NULL OR vendor_name = :vendor_name)
-      AND (:doc_type IS NULL OR doc_type = :doc_type)
+    WHERE (tenant_id IS NULL OR tenant_id = CAST(:tenant_id AS uuid))
+      AND (CAST(:vendor_name AS text) IS NULL OR LOWER(vendor_name) = LOWER(CAST(:vendor_name AS text)))
+      AND (CAST(:doc_type AS text) IS NULL OR LOWER(doc_type) = LOWER(CAST(:doc_type AS text)))
     ORDER BY embedding <=> CAST(:query_embedding AS vector)
     LIMIT :candidate_pool
 ),
@@ -23,9 +23,9 @@ keyword_search AS (
             ORDER BY ts_rank_cd(fts_vector, websearch_to_tsquery('english', :query_text)) DESC
         ) AS rank
     FROM document_chunks
-    WHERE (tenant_id IS NULL OR tenant_id = :tenant_id)
-      AND (:vendor_name IS NULL OR vendor_name = :vendor_name)
-      AND (:doc_type IS NULL OR doc_type = :doc_type)
+    WHERE (tenant_id IS NULL OR tenant_id = CAST(:tenant_id AS uuid))
+      AND (CAST(:vendor_name AS text) IS NULL OR LOWER(vendor_name) = LOWER(CAST(:vendor_name AS text)))
+      AND (CAST(:doc_type AS text) IS NULL OR LOWER(doc_type) = LOWER(CAST(:doc_type AS text)))
       AND fts_vector @@ websearch_to_tsquery('english', :query_text)
     ORDER BY ts_rank_cd(fts_vector, websearch_to_tsquery('english', :query_text)) DESC
     LIMIT :candidate_pool

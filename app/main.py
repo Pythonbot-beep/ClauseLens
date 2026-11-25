@@ -94,8 +94,8 @@ async def search_clauses(req: SearchRequest, db: AsyncSession = Depends(get_db))
         db=db,
         query_text=req.query,
         query_embedding=query_vec,
-        vendor_name=req.vendor_name,
-        doc_type=req.doc_type,
+        vendor_name=req.vendor_name.strip().lower(),
+        doc_type=req.doc_type.strip().lower(),
         top_k=req.top_k,
     )
     return {"count": len(results), "results": results}

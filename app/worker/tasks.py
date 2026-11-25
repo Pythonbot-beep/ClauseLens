@@ -17,12 +17,12 @@ async def ingest_document(
         doc_type: str,
         tenant_id: str | None = None,
 ) -> dict:
-    chunks = asyncio.to_thread(parse_and_chunk, file_path, vendor_name, doc_type)
+    chunks = await asyncio.to_thread(parse_and_chunk, file_path, vendor_name, doc_type)
     if not chunks:
         return {"document_id": document_id, "chunks_indexed": 0}    
 
     #Embed contextualized chunk text in batches
-    embeddings= await embed_texts([c.contextual_content for c in chunks])
+    embeddings = await embed_texts([c.contextual_content for c in chunks])
 
     # 3. Atomic write to PostgreSQL + flip document status to 'active'
     async with AsyncSessionLocal() as db:
